@@ -7,8 +7,8 @@ export abstract class Building{
         this.gridX = x;
         this.gridY = y;
         this.sprite = scene.add.rectangle(
-            x*32+1,
-            y*32+1,
+            x,
+            y,
             30,30,
             color
         );

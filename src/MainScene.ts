@@ -9,8 +9,6 @@ export default class MainScene extends Phaser.Scene {
   private readonly GRID_COLOR = 0x444444;
   private readonly GHOST_COLOR_FREE = 0xffffff;
   private readonly GHOST_COLOR_BLOCKED = 0xff0000;
-  private readonly BUILDING_COLOR = 0x00aaff;
-
   private ghost!: Phaser.GameObjects.Rectangle;
   private buildings: Map<string, Building> = new Map();
   private gridGraphics!: Phaser.GameObjects.Graphics;
@@ -99,10 +97,10 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
-    this.placeBuilding(gridX, gridY, 'turret');
+    this.placeBuilding(gridX, gridY);
   }
 
-  private placeBuilding(gridX: number, gridY: number, type: string): void {
+  private placeBuilding(gridX: number, gridY: number): void {
     if (this.isOccupied(gridX, gridY)) {
       return;
     }
@@ -110,19 +108,10 @@ export default class MainScene extends Phaser.Scene {
     const worldX = gridX * this.CELL_SIZE + 1;
     const worldY = gridY * this.CELL_SIZE + 1;
 
-    const sprite = this.add.rectangle(
-      worldX,
-      worldY,
-      this.CELL_SIZE - 2,
-      this.CELL_SIZE - 2,
-      this.BUILDING_COLOR
-    );
-    sprite.setOrigin(0, 0);
-    sprite.setDepth(10);
-
+    const drill = new Drill(this,worldX,worldY);
     
     const key = this.getGridKey(gridX, gridY);
-    this.buildings.set(key, building);
+    this.buildings.set(key, drill);
 
     this.updateGhostColor(gridX, gridY);
   }
