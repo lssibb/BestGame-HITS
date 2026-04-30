@@ -130,4 +130,10 @@ export default class MainScene extends Phaser.Scene {
     const color = occupied ? this.GHOST_COLOR_BLOCKED : this.GHOST_COLOR_FREE;
     this.ghost.setFillStyle(color, 0.4);
   }
+
+  update(_time: number, delta: number): void {
+    for(const building of this.buildings.values()){
+      building.update(delta);
+    }
+  }
 }
