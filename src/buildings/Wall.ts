@@ -1,11 +1,10 @@
 import { Building } from "./Building";
+import { BUILDING_CONFIGS } from '../core/BuildingConfigs';
 
 export class Wall extends Building{
-    static readonly COLOR = 0xA0522D;
-    static readonly HEALTHPOINTS = 150;
 
     constructor(scene: Phaser.Scene, x:number, y:number){
-        super(scene, x, y, Wall.COLOR, Wall.HEALTHPOINTS);
+        super(scene, x, y, BUILDING_CONFIGS.wall.color, BUILDING_CONFIGS.wall.healthPoints);
     }
 
     update(delta: number): void {
