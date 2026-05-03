@@ -1,10 +1,9 @@
 import Phaser from 'phaser';
 import { GameState } from './core/GameState';
 import { Building } from './buildings/Building';
-import { Drill } from './buildings/Drill';
 import { ResourcePanel } from './ui/ResourcePanel';
 import { BuildingSelector } from './ui/BuildingSelector';
-import { Wall } from './buildings/Wall';
+import { createBuilding } from './buildings/BuildingFactory';
 
 
 export default class MainScene extends Phaser.Scene {
@@ -119,16 +118,11 @@ placeBuilding(gridX: number, gridY: number): void {
     const worldX = gridX * this.CELL_SIZE + 1;
     const worldY = gridY * this.CELL_SIZE + 1;
 
-    let building: Building;
-
-    if (this.selectedType === 'drill') {
-        building = new Drill(this, worldX, worldY);
-    } else {
-        building = new Wall(this, worldX, worldY);
-    }
+    const building = createBuilding(this.selectedType,this,worldX,worldY);
 
     const key = this.getGridKey(gridX, gridY);
     this.buildings.set(key, building);
+    this.updateGhostColor(gridX, gridY);
 }
 
   private isOccupied(gridX: number, gridY: number): boolean {
@@ -154,3 +148,5 @@ placeBuilding(gridX: number, gridY: number): void {
     this.resourcePanel.update(this.gameState.resources);
   }
 }
+
+
