@@ -3,6 +3,8 @@ import { GameState } from './core/GameState';
 import { Building } from './buildings/Building';
 import { Drill } from './buildings/Drill';
 import { ResourcePanel } from './ui/ResourcePanel';
+import { BuildingSelector } from './ui/BuildingSelector';
+import { Wall } from './buildings/Wall';
 
 
 export default class MainScene extends Phaser.Scene {
@@ -21,6 +23,8 @@ export default class MainScene extends Phaser.Scene {
 
   public gameState: GameState = new GameState();
 
+  private selectedType: string = 'drill';
+
   constructor() {
     super({ key: 'MainScene' });
   }
@@ -31,11 +35,15 @@ export default class MainScene extends Phaser.Scene {
     this.setupGhost();
     this.setupInput();
     this.resourcePanel = new ResourcePanel(this);
+        new BuildingSelector(this, (type) => {
+        this.selectedType = type;
+    });
   }
 
   private calculateGridDimensions(): void {
+    const PANEL_WIDTH = 100;
     const { width, height } = this.scale;
-    this.cols = Math.floor(width / this.CELL_SIZE);
+    this.cols = Math.floor((width - PANEL_WIDTH) / this.CELL_SIZE);
     this.rows = Math.floor(height / this.CELL_SIZE);
   }
 
@@ -80,6 +88,7 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
+
     this.ghost.setVisible(true);
     this.ghost.setPosition(
       gridX * this.CELL_SIZE + 1,
@@ -104,21 +113,23 @@ export default class MainScene extends Phaser.Scene {
     this.placeBuilding(gridX, gridY);
   }
 
-  private placeBuilding(gridX: number, gridY: number): void {
-    if (this.isOccupied(gridX, gridY)) {
-      return;
-    }
+placeBuilding(gridX: number, gridY: number): void {
+    if (this.isOccupied(gridX, gridY)) return;
 
     const worldX = gridX * this.CELL_SIZE + 1;
     const worldY = gridY * this.CELL_SIZE + 1;
 
-    const drill = new Drill(this,worldX,worldY);
-    
-    const key = this.getGridKey(gridX, gridY);
-    this.buildings.set(key, drill);
+    let building: Building;
 
-    this.updateGhostColor(gridX, gridY);
-  }
+    if (this.selectedType === 'drill') {
+        building = new Drill(this, worldX, worldY);
+    } else {
+        building = new Wall(this, worldX, worldY);
+    }
+
+    const key = this.getGridKey(gridX, gridY);
+    this.buildings.set(key, building);
+}
 
   private isOccupied(gridX: number, gridY: number): boolean {
     const key = this.getGridKey(gridX, gridY);
