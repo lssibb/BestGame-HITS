@@ -10,5 +10,17 @@ export class Zealot extends Enemy {
 
   update(delta: number): void {
     this.moveTowardsTarget(delta);
+    this.updateAttack(delta);
+
+    // Если враг рядом с целью, атакуем
+    if (this.attackTarget && this.targetX !== null && this.targetY !== null) {
+      const dx = this.targetX - this.sprite.x;
+      const dy = this.targetY - this.sprite.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 50) {
+        this.doAttack();
+      }
+    }
   }
 }

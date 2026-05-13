@@ -3,6 +3,7 @@ export abstract class Building {
   gridX: number;
   gridY: number;
   healthPoints: number;
+  maxHealthPoints: number;
 
   constructor(
     scene: Phaser.Scene,
@@ -14,6 +15,7 @@ export abstract class Building {
     this.gridX = x;
     this.gridY = y;
     this.healthPoints = healthPoints;
+    this.maxHealthPoints = healthPoints;
 
     this.sprite = scene.add.sprite(x, y, 'buildings', frameKey);
     this.sprite.setOrigin(0, 0);
@@ -22,6 +24,11 @@ export abstract class Building {
 
   abstract update(delta: number): void;
   abstract onPlace(): void;
+
+  public takeDamage(amount: number): boolean {
+    this.healthPoints -= amount;
+    return this.healthPoints <= 0;
+  }
 
   public destroy(): void {
     this.sprite.destroy();

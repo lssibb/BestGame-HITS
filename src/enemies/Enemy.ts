@@ -10,6 +10,9 @@ export abstract class Enemy {
   protected targetX: number | null = null;
   protected targetY: number | null = null;
   protected scene: Phaser.Scene;
+  protected attackTarget: any = null;
+  protected attackTimer: number = 0;
+  protected attackCooldown: number = 1000; // атака раз в 1 сек
 
   constructor(
     scene: Phaser.Scene,
@@ -38,6 +41,10 @@ export abstract class Enemy {
     this.targetY = y;
   }
 
+  setAttackTarget(target: any): void {
+    this.attackTarget = target;
+  }
+
   protected moveTowardsTarget(delta: number): void {
     if (this.targetX === null || this.targetY === null) return;
 
@@ -59,6 +66,32 @@ export abstract class Enemy {
     this.sprite.y += moveY;
     this.gridX = this.sprite.x;
     this.gridY = this.sprite.y;
+  }
+
+  protected canAttack(): boolean {
+    return this.attackTimer >= this.attackCooldown;
+  }
+
+  protected doAttack(): void {
+    if (this.attackTarget && this.canAttack()) {
+      if (this.attackTarget.takeDamage) {
+        this.attackTarget.takeDamage(this.damage);
+      }
+      this.attackTimer = 0;
+
+      // Визуальный эффект атаки
+      this.sprite.scene.tweens.add({
+        targets: this.sprite,
+        scaleX: 1.15,
+        scaleY: 1.15,
+        duration: 80,
+        yoyo: true
+      });
+    }
+  }
+
+  protected updateAttack(delta: number): void {
+    this.attackTimer += delta;
   }
 
   abstract update(delta: number): void;
