@@ -6,6 +6,10 @@ export abstract class Enemy {
   maxHealthPoints: number;
   damage: number;
   speed: number;
+  
+  protected targetX: number | null = null;
+  protected targetY: number | null = null;
+  protected scene: Phaser.Scene;
 
   constructor(
     scene: Phaser.Scene,
@@ -16,6 +20,7 @@ export abstract class Enemy {
     damage: number,
     speed: number
   ) {
+    this.scene = scene;
     this.gridX = x;
     this.gridY = y;
     this.healthPoints = healthPoints;
@@ -24,8 +29,36 @@ export abstract class Enemy {
     this.speed = speed;
 
     this.sprite = scene.add.sprite(x, y, 'enemies', frameKey);
-    this.sprite.setOrigin(0, 0);
+    this.sprite.setOrigin(0.5, 0.5);
     this.sprite.setDepth(20);
+  }
+
+  setTarget(x: number, y: number): void {
+    this.targetX = x;
+    this.targetY = y;
+  }
+
+  protected moveTowardsTarget(delta: number): void {
+    if (this.targetX === null || this.targetY === null) return;
+
+    const dx = this.targetX - this.sprite.x;
+    const dy = this.targetY - this.sprite.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < 5) {
+      this.sprite.x = this.targetX;
+      this.sprite.y = this.targetY;
+      return;
+    }
+
+    const moveDistance = (this.speed * delta) / 1000;
+    const moveX = (dx / distance) * moveDistance;
+    const moveY = (dy / distance) * moveDistance;
+
+    this.sprite.x += moveX;
+    this.sprite.y += moveY;
+    this.gridX = this.sprite.x;
+    this.gridY = this.sprite.y;
   }
 
   abstract update(delta: number): void;

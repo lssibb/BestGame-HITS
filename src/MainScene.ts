@@ -8,6 +8,8 @@ import { WaveManager } from './core/WaveManager';
 import { WavePanel } from './ui/WavePanel';
 import { Enemy } from './enemies/Enemy';
 import { Zealot } from './enemies/Zealot';
+import { EnemySpawner } from './enemies/EnemySpawner';
+import { eventBus } from './core/EventBus';
 
 export default class MainScene extends Phaser.Scene {
   private readonly CELL_SIZE = 32;
@@ -17,6 +19,7 @@ export default class MainScene extends Phaser.Scene {
   private ghost!: Phaser.GameObjects.Rectangle;
   private buildings: Map<string, Building> = new Map();
   private enemies: Set<Enemy> = new Set();
+  private enemySpawner!: EnemySpawner;
 
   private map!: Phaser.Tilemaps.Tilemap;
   private tileset!: Phaser.Tilemaps.Tileset;
@@ -30,6 +33,7 @@ export default class MainScene extends Phaser.Scene {
   public gameState: GameState = new GameState();
   private selectedType: string = 'drill';
   private waveManager!: WaveManager;
+  private currentPhase: string = 'gathering';
 
   private readonly TILESET_KEY = 'tiles';
   private readonly TILESET_NAME = 'tiles';
@@ -143,8 +147,23 @@ export default class MainScene extends Phaser.Scene {
     this.resourcePanel = new ResourcePanel(this);
     this.wavePanel = new WavePanel(this);
     this.waveManager = new WaveManager();
+    this.enemySpawner = new EnemySpawner(this, this.enemies);
+    
     new BuildingSelector(this, (type) => {
       this.selectedType = type;
+    });
+
+    // Подписываемся на события волны для запуска спавнинга
+    eventBus.on('wave-update', (data) => {
+      if (data.phase === 'wave' && this.currentPhase !== 'wave') {
+        // Волна началась
+        this.enemySpawner.startWave(data.enemiesInWave, 60000);
+        this.currentPhase = 'wave';
+      } else if (data.phase !== 'wave' && this.currentPhase === 'wave') {
+        // Волна закончилась
+        this.enemySpawner.stopWave();
+        this.currentPhase = data.phase;
+      }
     });
   }
 
@@ -262,15 +281,43 @@ export default class MainScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     this.waveManager.update(delta);
     this.wavePanel.updateProgress(this.waveManager.getPhaseProgress());
+    this.enemySpawner.update(delta);
 
     for (const building of this.buildings.values()) {
       building.update(delta);
     }
 
+    // Обновляем врагов и даём им цели
     for (const enemy of this.enemies) {
+      // Если враг не имеет цели, ищем ближайшее здание
+      if (enemy['targetX'] === null || enemy['targetY'] === null) {
+        const target = this.findNearestBuilding(enemy);
+        if (target) {
+          enemy.setTarget(target.sprite.x, target.sprite.y);
+        }
+      }
+      
       enemy.update(delta);
     }
 
     this.resourcePanel.update(this.gameState.resources);
+  }
+
+  private findNearestBuilding(enemy: Enemy): Building | null {
+    let nearest: Building | null = null;
+    let minDistance = Infinity;
+
+    for (const building of this.buildings.values()) {
+      const dx = building.sprite.x - enemy.sprite.x;
+      const dy = building.sprite.y - enemy.sprite.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = building;
+      }
+    }
+
+    return nearest;
   }
 }

@@ -1,3 +1,5 @@
+import { BUILDING_CONFIGS } from '../core/BuildingConfigs';
+import { eventBus } from '../core/EventBus';
 import { Enemy } from './Enemy';
 
 export class Zealot extends Enemy {
@@ -7,6 +9,6 @@ export class Zealot extends Enemy {
   }
 
   update(delta: number): void {
-    // Пока просто стоит, позже добавим движение
+    this.moveTowardsTarget(delta);
   }
 }
