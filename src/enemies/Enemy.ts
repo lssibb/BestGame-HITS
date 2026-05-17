@@ -45,6 +45,10 @@ export abstract class Enemy {
     this.attackTarget = target;
   }
 
+  needsTarget(): boolean {
+    return this.targetX === null || this.targetY === null || !this.attackTarget;
+  }
+
   protected moveTowardsTarget(delta: number): void {
     if (this.targetX === null || this.targetY === null) return;
 

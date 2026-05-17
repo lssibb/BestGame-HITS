@@ -4,15 +4,21 @@ import { Enemy } from './Enemy';
 export class EnemySpawner {
   private scene: Phaser.Scene;
   private enemies: Set<Enemy>;
+  private bounds: { left: number; right: number; top: number; bottom: number };
   private spawnTimer: number = 0;
   private spawnInterval: number = 2000; // Появляется враг каждые 2 секунды
   private totalToSpawn: number = 0;
   private spawned: number = 0;
   private isActive: boolean = false;
 
-  constructor(scene: Phaser.Scene, enemies: Set<Enemy>) {
+  constructor(
+    scene: Phaser.Scene,
+    enemies: Set<Enemy>,
+    bounds: { left: number; right: number; top: number; bottom: number }
+  ) {
     this.scene = scene;
     this.enemies = enemies;
+    this.bounds = bounds;
   }
 
   public startWave(enemyCount: number, duration: number): void {
@@ -48,31 +54,30 @@ export class EnemySpawner {
   }
 
   private getRandomSpawnPosition(): { x: number; y: number } {
-    const { width, height } = this.scene.scale;
     const side = Math.floor(Math.random() * 4);
     const offset = 20;
 
     switch (side) {
       case 0: // Сверху
         return {
-          x: Math.random() * width,
-          y: -offset
+          x: Phaser.Math.Between(this.bounds.left, this.bounds.right),
+          y: this.bounds.top - offset
         };
       case 1: // Снизу
         return {
-          x: Math.random() * width,
-          y: height + offset
+          x: Phaser.Math.Between(this.bounds.left, this.bounds.right),
+          y: this.bounds.bottom + offset
         };
       case 2: // Слева
         return {
-          x: -offset,
-          y: Math.random() * height
+          x: this.bounds.left - offset,
+          y: Phaser.Math.Between(this.bounds.top, this.bounds.bottom)
         };
       case 3: // Справа
       default:
         return {
-          x: width + offset,
-          y: Math.random() * height
+          x: this.bounds.right + offset,
+          y: Phaser.Math.Between(this.bounds.top, this.bounds.bottom)
         };
     }
   }
